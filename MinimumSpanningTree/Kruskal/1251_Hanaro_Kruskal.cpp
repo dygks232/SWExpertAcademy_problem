@@ -31,13 +31,12 @@ void output(int n);
 long long calcDist(int x1, int y1, int x2, int y2);
 void makeEdge();
 int find(int u);
-void merge(int u, int v);
+bool merge(int u, int v);
 void kruskal();
 
 int T, N;
 long long ans;
 double E, answer;
-bool check;
 
 pos input[MAXN];
 vector<pair<long long, pair<int, int> > > edge;
@@ -80,17 +79,16 @@ int find(int u)
 	return parent[u] = find(parent[u]);
 }
 
-void merge(int u, int v)
+bool merge(int u, int v)
 {
-	check = false;
 	u = find(u);
 	v = find(v);
 
 	if (u == v)
-		return;
+		return false;
 
 	parent[u] = v;
-	check = true;
+	return true;
 }
 
 void kruskal()
@@ -98,8 +96,7 @@ void kruskal()
 	int len = edge.size();
 	for (int i = 0; i < len; i++)
 	{
-		merge(edge[i].second.first, edge[i].second.second);
-		if (check)
+		if (merge(edge[i].second.first, edge[i].second.second))
 			ans += edge[i].first;
 	}
 }
