@@ -72,6 +72,11 @@ void makeLCP()
 				LCP[idx] = i;
 				break;
 			}
+			if (i == len - 1)
+			{
+				LCP[idx] = len;
+				break;
+			}
 		}
 	}
 }
