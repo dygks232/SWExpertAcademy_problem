@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include<iostream>
 #include<cstdio>
 #include<cstdlib>
@@ -15,26 +16,27 @@
 #include<functional>
 using namespace std;
 
-#define TESTCASE 10
+#define MAXN 10
+#define START (N)
+#define END (N+1)
 
 void inputAndInit();
 void solve();
 void output(int n);
 
-void dfs(int curr);
-bool isAllVisit();
-int dist(int idx1, int idx2);
+int calcDist(int idx1, int idx2);
+void dfs(int curr, int bit, int tempAns);
 
-int answer, N, tempAns;
+int T, N, answer;
 
-vector<pair<int, int> > input;
-vector<bool> visit;
+pair<int, int> pos[MAXN + 2];
+int dist[MAXN][1 << MAXN];
+bool visit[MAXN];
 
 int main()
 {
-	int i;
-	cin >> i;
-	for (i = 1; i <= TESTCASE; i++)
+	scanf("%d", &T);
+	for (int i = 1; i <= T; i++)
 	{
 		inputAndInit();
 		solve();
@@ -43,69 +45,61 @@ int main()
 	return 0;
 }
 
-bool isAllVisit()
+int calcDist(int idx1, int idx2)
 {
-	for(int i = 0; i < N; i++)
-		if (!visit[i])
-			return false;
-	return true;
-}
-
-void dfs(int curr)
-{
-	if (!isAllVisit())
-	{
-		for (int i = 1; i <= N; i++)
-		{
-			if (!visit[i - 1])
-			{
-				tempAns += abs(input[i].first - input[curr].first) + abs(input[i].second - input[curr].second);
-				if (tempAns > answer)
-				{
-					tempAns -= abs(input[i].first - input[curr].first) + abs(input[i].second - input[curr].second);
-					continue;
-				}
-				visit[i - 1] = true;
-				dfs(i);
-				visit[i - 1] = false;
-				tempAns -= abs(input[i].first - input[curr].first) + abs(input[i].second - input[curr].second);
-			}
-		}
-	}
-	else
-	{
-		tempAns += abs(input[N + 1].first - input[curr].first) + abs(input[N + 1].second - input[curr].second);
-		answer = min(tempAns, answer);
-		tempAns -= abs(input[N + 1].first - input[curr].first) + abs(input[N + 1].second - input[curr].second);
-		return;
-	}
+	return abs(pos[idx1].first - pos[idx2].first) + abs(pos[idx1].second - pos[idx2].second);
 }
 
 void inputAndInit()
 {
-	cin >> N;
-	input = vector<pair<int, int> >(N + 2);
-	visit.assign(N, false);
-	answer = 0;
-	tempAns = 0;
-	cin >> input[0].first >> input[0].second >> input[N + 1].first >> input[N + 1].second;
-	for (int i = 1; i < N + 1; i++)
-	{
-		cin >> input[i].first >> input[i].second;
-		if (i)
-			answer += dist(i - 1, i);
-	}
-	answer += dist(N, N + 1);
+	scanf("%d", &N);
+	answer = INT_MAX;
+	memset(visit, false, sizeof(visit));
+	memset(dist, -1, sizeof(dist));
+	scanf("%d %d", &pos[START].first, &pos[START].second);
+	scanf("%d %d", &pos[END].first, &pos[END].second);
+	for (int i = 0; i < N; i++)
+		scanf("%d %d", &pos[i].first, &pos[i].second);
 }
 
-int dist(int idx1, int idx2)
+void dfs(int curr, int bit, int tempAns)
 {
-	return abs(input[idx1].first - input[idx2].first) + abs(input[idx1].second - input[idx2].second);
+	int nextAns;
+	if (bit == (1 << N) - 1)
+	{
+		tempAns += calcDist(curr, END);
+		answer = min(answer, tempAns);
+		return;
+	}
+
+	for (int i = 0; i < N; i++)
+	{
+		if (curr == i || visit[i])
+			continue;
+		nextAns = tempAns + calcDist(curr, i);
+		if (dist[i][bit | (1 << i)] != -1 && dist[i][bit | (1 << i)] < nextAns)
+			continue;
+		visit[i] = true;
+		dist[i][bit | (1 << i)] = nextAns;
+		dfs(i, bit | (1 << i), nextAns);
+		visit[i] = false;
+	}
 }
 
 void solve()
 {
-	dfs(0);
+	int currDist;
+	for (int i = 0; i < N; i++)
+	{
+		currDist = calcDist(START, i);
+		if (dist[i][1 << i] == -1 || currDist <= dist[i][1 << i])
+		{
+			dist[i][1 << i] = currDist;
+			visit[i] = true;
+			dfs(i, 1 << i, currDist);
+			visit[i] = false;
+		}
+	}
 }
 
 void output(int n)
