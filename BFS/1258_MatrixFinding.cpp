@@ -22,6 +22,7 @@ void output(int n);
 
 void bfs(int r, int c);
 bool isOutOfRange(int r, int c);
+bool comp(pair<int, int> a, pair<int, int> b);
 
 int T, N;
 
